@@ -1,6 +1,10 @@
+import json
+import resource
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 import pymysql
+from fastapi.responses import ORJSONResponse
 from sqlalchemy.orm import Session
 
 from database import SessionLocal
@@ -50,8 +54,6 @@ for name in product_names:
     trie.insert(name)
 
 trie_jamo = Trie()
-# product_names = ['안녕하세요', '(에)']
-# try:
 for name in product_names:
     kor_name_tokens = []
     kor_suffix = nameTokenize(name)
@@ -106,3 +108,25 @@ async def search_by_trie(keyword: str):
         'res': 0,
         'data': result
     }
+
+@app.get('/search_trie_client')
+async def get_search_keyword_trie():
+    jsonStr = json.dumps(trie.__dict__, default=lambda o: o.__dict__, indent=None, separators=(',', ':'))
+    text_file = open("sample.txt", "w")
+    n = text_file.write(jsonStr)
+    text_file.close()
+
+    jsonStr = json.dumps(trie_jamo.__dict__, default=lambda o: o.__dict__, indent=None, separators=(',', ':'))
+    text_file = open("sample_jamo.txt", "w")
+    n = text_file.write(jsonStr)
+    text_file.close()
+    return {
+        'res': 0,
+        'data': 'complete'
+    }
+
+
+@app.get("/memory-usage")
+async def memory_usage():
+    usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    return {"memory_usage": usage}

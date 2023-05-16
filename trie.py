@@ -1,3 +1,5 @@
+import re
+
 from jamo import j2h, j2hcj, h2j
 
 
@@ -163,3 +165,7 @@ def nameTokenize(test_name):
     return name_token_list
 
 
+def remove_other_than_korean(string: str):
+    korean_pattern = re.compile('[ㄱ-ㅣ가-힣]+')
+    korean_chars = korean_pattern.findall(string)
+    return ''.join(korean_chars)

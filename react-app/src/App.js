@@ -16,6 +16,7 @@ function App() {
     const [trieSuffixKeywords, setTrieSuffixKeywords] = useState([]);
     const [elasticKeywords2, setElasticKeywords2] = useState([]);
     const [elasticKeywords2Nori, setEleasticKeywords2Nori] = useState([]);
+    const [elasticKeywords2NoriDiscard, setElasticKeywords2NoriDiscard] = useState([]);
 
     function onKeywordChangeHandler(event) {
         const keyword = event.target.value;
@@ -47,7 +48,7 @@ function App() {
 
     function onElasticKeywordChangeHandler(event) {
         const keyword = event.target.value;
-        const url = `http://localhost:9200/autocomplete_test_1/_search`
+        const url = `http://172.30.1.26:9200/autocomplete_test_1/_search`
         const option = {
             method: 'POST',
             body: JSON.stringify({
@@ -90,19 +91,20 @@ function App() {
 
     function onElasticKeywor2Changehandler(event){
         const keyword = event.target.value;
-        const url = `http://172.30.1.26:9200/autocomplete_test_3/_search`
+        const url = `http://172.30.1.26:9200/autocomplete_test_2/_search`
         const option = {
             method: 'POST',
             body: JSON.stringify({
                 "query": {
                     "match": {
-                        "nori_name": keyword
+                        "name": keyword
                     }
                 }
             }),
             headers: {
                 'Content-Type': 'application/json',
             },
+
         }
         fetch(url, option)
             .then(res => res.json())
@@ -148,64 +150,118 @@ function App() {
 
     }
 
+    function onElasticKeyword2NoriDiscardChangeHandler(event){
+        const keyword = event.target.value;
+        const url = `http://172.30.1.26:9200/autocomplete_test_3/_search`
+        const option = {
+            method: 'POST',
+            body: JSON.stringify({
+                "query": {
+                    "match": {
+                        "nori_name": keyword
+                    }
+                }
+            }),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }
+        fetch(url, option)
+            .then(res => res.json())
+            .then(data => {
+                const result = data.hits.hits;
+                const keywords = result.map(element => {
+                    return {
+                        name: element._source.name
+                    };
+                });
+                setElasticKeywords2NoriDiscard(keywords);
+            })
+    }
 
     return (
         <Outer>
             <div>
-                <div>SQL WHERE LIKE 검색</div>
-                <input type='text' onChange={onKeywordChangeHandler}></input>
-                <ul>
+                <div class={'input-group mb-3'}>
+                    <span className={'input-group-text'}>SQL LIKE 검색</span>
+                    <input
+                        className={'form-control'}
+                        type='text'
+                        onChange={onKeywordChangeHandler}></input>
+                </div>
+                <ul className={'list-group'}>
                     {keywords.map((keyword, index) => {
                         return (
-                            <li>{keyword}</li>
+                            <li className='list-group-item list-group-item-action'>{keyword}</li>
                         )
                     })}
                 </ul>
             </div>
             <div>
                 <div>
-                    <div>Elasticsearch API 검색(기본)</div>
-                    <input type='text' onChange={onElasticKeywor2Changehandler}></input>
-                    <ul>
-                        {elasticKeywords2.map((keyword, index) => {
-                            return (
-                                <li>{keyword.name}</li>
-                            )
-                        })}
-
-                    </ul>
-                    <div>Elasticsearch API 검색(nori plugin 적용)</div>
-                    <input type='text' onChange={onElasticKeyword2NoriChangeHandler}></input>
-                    <ul>
+                    <div className={'mb-3'}>
+                        <div className={'input-group mb-3'}>
+                            <span className={'input-group-text'}>Elasticsearch</span>
+                            <input type='text' className={'form-control'} onChange={onElasticKeywor2Changehandler}></input>
+                        </div>
+                        <ul className='list-group'>
+                            {elasticKeywords2.map((keyword, index) => {
+                                return (
+                                    <li className={'list-group-item list-group-item-action'}>{keyword.name}</li>
+                                )
+                            })}
+                        </ul>
+                    </div>
+                    <div>
+                        <div className={'input-group mb-3'}>
+                            <span className={'input-group-text'}>Elasticsearch-nori</span>
+                            <input className={'form-control'} type='text' onChange={onElasticKeyword2NoriChangeHandler}></input>
+                        </div>
+                        <ul className={'list-group mb-3'}>
                         {elasticKeywords2Nori.map((keyword, index) => {
                             return (
-                                <li>{keyword.name}</li>
+                                <li className={'list-group-item list-group-item-action'}>{keyword.name}</li>
                             )
                         })}
-
-                    </ul>
+                        </ul>
+                    </div>
                 </div>
-
             </div>
             <div>
-                <div>Trie prefix search(python fast api)</div>
-                <input type='text' onChange={onTrieKeywordChangeHandler}></input>
-                <ul>
+                <div>
+                        <div className={'input-group mb-3'}>
+                            <span className={'input-group-text'}>Elasticsearch-nori(discard)</span>
+                            <input className={'form-control'} type='text' onChange={onElasticKeyword2NoriDiscardChangeHandler}></input>
+                        </div>
+                        <ul className={'list-group'}>
+                        {elasticKeywords2NoriDiscard.map((keyword, index) => {
+                            return (
+                                <li className={'list-group-item list-group-item-action'}>{keyword.name}</li>
+                            )
+                        })}
+                        </ul>
+                    </div>
+            </div>
+            <div>
+                <div className={'input-group mb-3'}>
+                    <span className={'input-group-text'}>Trie prefix</span>
+                    <input className={'form-control'} type='text' onChange={onTrieKeywordChangeHandler}></input>
+                </div>
+                <ul className={'list-group mb-3'}>
                     {trieKeywords.map((keyword, index) => {
                         return (
-                            <li>{keyword.name}</li>
+                            <li className={'list-group-item list-group-item-action'}>{keyword.name}</li>
                         )
                     })}
-
                 </ul>
-            </div>
-            <div>
-                <div>Trie prefix + suffix search(python fast api)</div>
-                <input type='text' onChange={onTrieSuffixKeywordChangeHandler}></input>
-                <ul>
+                <div className={'input-group mb-3'}>
+                    <span className={'input-group-text'}>Trie prefix + suffix</span>
+                    <input className={'form-control'} type='text' onChange={onTrieSuffixKeywordChangeHandler}></input>
+                </div>
+                <ul className={'list-group'}>
                     {trieSuffixKeywords.map((keyword, index) => {
                         return (
-                            <li>{keyword}</li>
+                            <li className={'list-group-item list-group-item-action'}>{keyword}</li>
                         )
                     })}
 
