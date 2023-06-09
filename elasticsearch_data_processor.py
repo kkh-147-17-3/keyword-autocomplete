@@ -7,7 +7,7 @@ products = get_all_product_name()
 
 docs = []
 es = Elasticsearch('http://localhost:9200')
-index = 'autocomplete_test_3'
+index = 'autocomplete_test_4'
 num = 1
 for name in products:
     doc = {
@@ -16,7 +16,6 @@ for name in products:
         "_source": {
                     'id': num,
                     'name': name,
-                    'nori_name': name
                    }
     }
     num += 1

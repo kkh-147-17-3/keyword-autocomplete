@@ -94,18 +94,19 @@ class Trie:
 
     @staticmethod
     def convert_kor_string_with_jamo(text: str):
-        return_value = ""
-        for t in text:
-            jamo_list = j2hcj(h2j(t))
-            if len(jamo_list) == 2:
-                return_value += jamo_list[0]
-                return_value += j2h(*jamo_list)
-            else:
-                return_value += jamo_list[0]
-                for i in range(2, len(jamo_list) + 1):
-                    han = j2h(*jamo_list[:i])
-                    return_value += han
-        return return_value
+        # return_value = ""
+        # for t in text:
+        #     jamo_list = j2hcj(h2j(t))
+        #     if len(jamo_list) == 2:
+        #         return_value += jamo_list[0]
+        #         return_value += j2h(*jamo_list)
+        #     else:
+        #         return_value += jamo_list[0]
+        #         for i in range(2, len(jamo_list) + 1):
+        #             han = j2h(*jamo_list[:i])
+        #             return_value += han
+        # return return_value
+        return text
 
     # Trie의 메소드
     def prefix_insert(self, eng_name):

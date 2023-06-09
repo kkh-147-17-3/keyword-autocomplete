@@ -11,17 +11,17 @@ from database import SessionLocal
 from models import Product
 from trie import Trie, nameTokenize
 from numba import jit
+from Oauth import KakaoOauth
 
+host = 'localhost'
+username = 'root'
+password = ''
+db = 'mari_world'
 
-# host = 'localhost'
-# username = 'root'
-# password = '1234'
-# db = 'mari_world'
-#
-# connect_str = 'DRIVER={MySQL ODBC 8.0 ANSI Driver};' + f'User={username};Password={password};Server={host};Database={db};Port=3306;String Types=Unicode'
-#
-# cnxn = pymysql.connect(host=host, port=3306, user=username,
-#                        passwd=password, db=db, charset='utf8')
+connect_str = 'DRIVER={MySQL ODBC 8.0 ANSI Driver};' + f'User={username};Password={password};Server={host};Database={db};Port=3306;String Types=Unicode'
+
+cnxn = pymysql.connect(host=host, port=3306, user=username,
+                       passwd=password, db=db, charset='utf8')
 #
 # # cnxn = pyodbc.connect(connect_str)
 # cursor = cnxn.cursor(pymysql.cursors.DictCursor)
@@ -65,6 +65,7 @@ for name in product_names:
     for name_token in kor_name_tokens[1:]:
         trie_jamo.suffix_insert(name_token, name)
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -72,17 +73,11 @@ def get_db():
     finally:
         db.close()
 
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
 @app.get("/search/{keyword}")
 async def search(keyword: str, db: Session = Depends(get_db)):
     names = [result[0] for result in db.query(Product.name)
-                                        .filter(Product.name.ilike(f'%{keyword}%'))
-                                        .offset(0).limit(10).all()]
+    .filter(Product.name.ilike(f'%{keyword}%'))
+    .offset(0).limit(10).all()]
 
     return {
         'res': 0,
@@ -109,6 +104,7 @@ async def search_by_trie(keyword: str):
         'data': result
     }
 
+
 @app.get('/search_trie_client')
 async def get_search_keyword_trie():
     jsonStr = json.dumps(trie.__dict__, default=lambda o: o.__dict__, indent=None, separators=(',', ':'))
@@ -130,3 +126,16 @@ async def get_search_keyword_trie():
 async def memory_usage():
     usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     return {"memory_usage": usage}
+
+
+@app.get("/oauth/")
+async def login(login: str, code: str):
+    oauth = KakaoOauth()
+    result_token = oauth.auth(code)
+    user_info = oauth.userinfo(result_token['access_token'])
+
+    return {
+        'method': login,
+        'code': code,
+        'result': user_info,
+    }
